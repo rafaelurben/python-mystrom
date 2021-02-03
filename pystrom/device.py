@@ -4,10 +4,7 @@
 
 import requests
 
-try:
-    from rich import print
-except ImportError:
-    print("[INFO] Couldn't import rich!")
+from pystrom.utils import print
 
 class MyStromDevice():
     DEVICE_TYPES = {
