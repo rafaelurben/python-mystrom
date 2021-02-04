@@ -4,8 +4,6 @@
 
 import requests
 
-from pystrom.utils import print
-
 class MyStromDevice():
     DEVICE_TYPES = {
         101: "Switch CH v1",

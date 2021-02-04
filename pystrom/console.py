@@ -5,10 +5,10 @@
 import sys
 import argparse
 
-from pystrom import search
-from pystrom.utils import print
+from pystrom.search import MyStromSearch
+from pystrom.utils import log
 
-class CommandParser(object):
+class MyStromCommandParser(object):
     def __init__(self):
         parser = argparse.ArgumentParser(
             description='[PyStrom] Control MyStrom devices',
@@ -20,7 +20,7 @@ Possible commands:
         parser.add_argument('command', help='Subcommand to run')
         args = parser.parse_args(sys.argv[1:2])
         if not hasattr(self, args.command):
-            print('Unrecognized command')
+            log('Unrecognized command')
             parser.print_help()
             exit(1)
         getattr(self, args.command)()
@@ -31,6 +31,6 @@ Possible commands:
         parser.add_argument('--live', action='store_true', help="Keep connection open until manually stopped.")
         args = parser.parse_args(sys.argv[2:])
         if args.live:
-            search.searchlive()
+            MyStromSearch.searchlive()
         else:
-            search.searchall()
+            MyStromSearch.searchall()

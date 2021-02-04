@@ -2,7 +2,7 @@
 #
 # https://github.com/rafaelurben/python-mystrom
 
-from pystrom.console import CommandParser
+from pystrom.console import MyStromCommandParser
 
 if __name__ == '__main__':
-    CommandParser()
+    MyStromCommandParser()
