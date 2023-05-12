@@ -42,7 +42,7 @@ class MyStromDevice():
         if self.device_type in self.DEVICE_TYPES:
             return self.DEVICE_TYPES[self.device_type]
         else:
-            return "Non-MyStrom-Device ("+self.device_type+")"
+            return f"Non-MyStrom-Device ({str(self.device_type)})"
 
 
     def __str__(self):
