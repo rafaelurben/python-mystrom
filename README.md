@@ -6,6 +6,8 @@ Dieses Projekt ist noch sehr neu und hat deshalb noch nicht sehr viele Features.
 
 HINWEIS: Dieses Projekt wird nicht von [MyStrom](https://mystrom.ch) entwickelt und steht auch nicht damit in Verbindung.
 
+MyStrom API Dokumentation: [https://api.mystrom.ch/](https://api.mystrom.ch/)
+
 ## Installation
 
 Die Installation benötigt [Python](https://www.python.org/downloads/) sowie [Pip](https://pip.pypa.io/en/stable/installing/#installing-with-get-pip-py).
