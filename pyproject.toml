@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pystrom"
+description = "Unoffizielle MyStrom-Steuerung"
+readme = "README.md"
+authors = [{ name = "Rafael Urben", email = "github@rafaelurben.ch" }]
+maintainers = [{ name = "Rafael Urben", email = "github@rafaelurben.ch" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+]
+requires-python = ">= 3.8"
+dependencies = [
+    "requests>=2.25.1",
+    "rich>=9.10.0",
+    "packaging>=20.8",
+]
+dynamic = ["version"]
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[project.urls]
+Homepage = "https://github.com/rafaelurben/python-mystrom"
+GitHub = "https://github.com/rafaelurben/python-mystrom"
+Issues = "https://github.com/rafaelurben/python-mystrom/issues"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages]
+find = { namespaces = false }
+
+[tool.setuptools.dynamic]
+version = { file = ["_version.txt"] }
