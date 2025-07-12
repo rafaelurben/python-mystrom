@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pystrom"
-description = "Unoffizielle MyStrom-Steuerung"
+description = "Unofficial MyStrom API Client"
 readme = "README.md"
 authors = [{ name = "Rafael Urben", email = "github@rafaelurben.ch" }]
 maintainers = [{ name = "Rafael Urben", email = "github@rafaelurben.ch" }]
