@@ -1,5 +1,6 @@
 import logging
 from json import JSONDecodeError
+from typing import Literal, TypedDict, NotRequired
 
 import requests
 
@@ -105,19 +106,100 @@ class MyStromDevice:
         self.api_post("api/v1/settings", data=settings)
 
 
-    # Switch
+class MyStromSwitch(MyStromDevice):
+    """MyStrom Switch device class."""
 
-    def switch_on(self):
-        return self.api_get("relay?state=1")
+    def __init__(self, ip: str, mac: str, device_type: int):
+        super().__init__(ip=ip, mac=mac, device_type=device_type)
 
-    def switch_off(self):
-        return self.api_get("relay?state=0")
+    def turn_on(self):
+        """Turn on the switch."""
+        self.api_get("relay?state=1")
 
-    def switch_toggle(self):
-        return self.api_get("toggle")
+    def turn_off(self):
+        """Turn off the switch."""
+        self.api_get("relay?state=0")
 
-    def switch_report(self):
+    def toggle(self) -> bool:
+        """Toggle the switch state. If it is on, it will be turned off, and vice versa.
+        Returns the new state of the relay."""
+        return self.api_get("toggle").get("relay")
+
+    def power_cycle(self, seconds: int = 10):
+        """Power cycle the switch by turning it off, waiting for a specified number of seconds, and then turning it back on.
+        Will throw an error if the switch is not currently on.
+
+        Args:
+            seconds (int): The number of seconds to wait while the switch is off. Maximum is 3600 seconds (1 hour).
+        """
+        self.api_get(f"power_cycle?time={seconds}")
+
+    def timer(self, mode: Literal['on', 'off', 'toggle', 'none'], seconds: int = 5):
+        """Set the state of the switch and reverse it after a specified number of seconds."""
+        self.api_post("timer", data={"mode": mode, "time": seconds})
+
+    def get_report(self) -> str:
+        """Returns a report of the switch's current state, including power consumption, relay state and temperature."""
         return self.api_get("report")
+
+    def get_temperature(self) -> dict:
+        """Returns the current temperature reading and temperature configuration."""
+        return self.api_get("api/v1/temperature")
+
+
+class MyStromBulb(MyStromDevice):
+    """MyStrom Bulb device class."""
+
+    class BulbStateResponse(TypedDict):
+        on: bool
+        color: str
+        mode: str  # color mode, "rgb" or "hsv"
+        ramp: int  # ramp time in ms
+        notifyurl: str
+
+    class BulbStateRequest(TypedDict):
+        action: NotRequired[Literal['on', 'off', 'toggle']]
+        color: NotRequired[str]  # e.g. "255,0,0" for red in RGB
+        mode: NotRequired[Literal['hsv', 'rgb']]
+        ramp: NotRequired[int]  # ramp time in ms
+        notifyurl: NotRequired[str]  # URL to notify via POST when the state changes
+
+    def __init__(self, ip: str, mac: str, device_type: int):
+        super().__init__(ip=ip, mac=mac, device_type=device_type)
+
+    def _post_action(self, data: BulbStateRequest) -> BulbStateResponse:
+        return self.api_post(f"api/v1/device/{self.mac}",
+                             data={"action": data},
+                             headers={'Content-Type': 'application/x-www-form-urlencoded'}).get(self.mac)
+
+    def turn_on(self) -> BulbStateResponse:
+        """Turn on the bulb."""
+        return self._post_action({"action": "on"})
+
+    def turn_off(self) -> BulbStateResponse:
+        """Turn off the bulb."""
+        return self._post_action({"action": "off"})
+
+    def toggle(self) -> BulbStateResponse:
+        """Toggle the bulb."""
+        return self._post_action({"action": "toggle"})
+
+    def set_options(self, data: BulbStateRequest) -> BulbStateResponse:
+        """Sets options like color, ramp, mode and notifyurl for the bulb."""
+        return self._post_action(data)
+
+    def get_device_information(self) -> dict:
+        """Returns the device information, including the current state of the bulb."""
+        return self.api_get(f"api/v1/device")
+
+
+DEVICE_TYPE_CLASS_MAP = {
+    101: MyStromSwitch,  # Switch CH v1
+    106: MyStromSwitch,  # Switch CH v2
+    107: MyStromSwitch,  # Switch EU
+    120: MyStromSwitch,  # Switch Zero
+    102: MyStromBulb,  # Bulb
+}
 
 
 class MyStromDeviceFactory:
@@ -126,7 +208,8 @@ class MyStromDeviceFactory:
     @classmethod
     def _get_or_create_device(cls, mac: str, ip: str, device_type: int) -> MyStromDevice:
         if mac not in cls.all_devices:
-            device = MyStromDevice(ip=ip, mac=mac, device_type=device_type)
+            clazz = DEVICE_TYPE_CLASS_MAP.get(device_type, MyStromDevice)
+            device = clazz(ip=ip, mac=mac, device_type=device_type)
             cls.all_devices[mac] = device
             return device
         else:
