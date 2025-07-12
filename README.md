@@ -94,10 +94,24 @@ The following API methods are available for controlling devices:
 
 Other device types are not yet implemented with specific classes, but you can still interact with them:
 
-To control them, you can use the manuel API methods of the `MyStromDevice` class, which allows you to send HTTP requests
+To control them, you can use the manual API methods of the `MyStromDevice` class, which allows you to send HTTP requests
 to the device's API endpoints.
 
 | Method        | Function                                         |
 |---------------|--------------------------------------------------|
 | `.api_get()`  | Send a GET request to the device's API endpoint  |
 | `.api_post()` | Send a POST request to the device's API endpoint |
+
+### Contributing
+
+If you want to contribute to this project, feel free to open an issue or pull request. Contributions are welcome!
+
+1. Fork the repository
+2. Clone your forked repository
+3. `python -m pip install -e .[dev]` to install the package in editable mode with development dependencies
+4. Make your changes
+5. Format & check your code:
+    - Format your code with `black .`
+    - Check typing with `mypy --strict .`
+6. Push your changes to your forked repository
+7. Open a pull request
