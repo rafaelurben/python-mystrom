@@ -1,10 +1,7 @@
-# Rafael Urben, 2021
-#
-# https://github.com/rafaelurben/python-mystrom
-
 import requests
 
-class MyStromDevice():
+
+class MyStromDevice:
     DEVICE_TYPES = {
         101: "Switch CH v1",
         102: "Bulb",
@@ -30,9 +27,9 @@ class MyStromDevice():
     def from_announcement(cls, data, ip):
         mac = data[:6].hex()
         device_type = data[6]
-        #device_type_2 = data[7]
+        # device_type_2 = data[7]
 
-        if not mac in cls.all_devices:
+        if mac not in cls.all_devices:
             return cls(ip=ip, mac=mac, device_type=device_type)
         else:
             return cls.all_devices[mac]
@@ -43,7 +40,6 @@ class MyStromDevice():
             return self.DEVICE_TYPES[self.device_type]
         else:
             return f"Non-MyStrom-Device ({str(self.device_type)})"
-
 
     def __str__(self):
         return f"<MyStromDevice '{self.type_name}' {self.mac} @ {self.ip}>"
@@ -79,8 +75,8 @@ class MyStromDevice():
     def get_wifi_list(self):
         data = self.api_get("api/v1/scan")
         networks = {}
-        for i in range(len(data)//2):
-            networks[data[i*2]] = data[i*2+1]
+        for i in range(len(data) // 2):
+            networks[data[i * 2]] = data[i * 2 + 1]
         return networks
 
     # Switch
@@ -96,4 +92,3 @@ class MyStromDevice():
 
     def switch_report(self):
         return self.api_get("report")
-

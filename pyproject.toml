@@ -20,14 +20,9 @@ classifiers = [
 requires-python = ">= 3.8"
 dependencies = [
     "requests>=2.25.1",
-    "rich>=9.10.0",
     "packaging>=20.8",
 ]
 dynamic = ["version"]
-
-[project.readme]
-file = "README.md"
-content-type = "text/markdown"
 
 [project.urls]
 Homepage = "https://github.com/rafaelurben/python-mystrom"
