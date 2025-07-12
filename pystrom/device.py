@@ -3,6 +3,8 @@ from json import JSONDecodeError
 
 import requests
 
+from pystrom.exceptions import MyStromException
+
 logger = logging.getLogger(__name__)
 
 DEVICE_TYPE_NAME_MAP = {
@@ -46,21 +48,27 @@ class MyStromDevice:
 
     # Base API
 
-    def api_get(self, path, *args, **kwargs) -> dict | list | str:
-        path = path.lstrip("/")
-        url = f"http://{self.ip}/{path}"
-        logger.info("Requesting GET %s", url)
-        r = requests.get(url, *args, **kwargs)
+    def api_request(self, method: str, path: str, **kwargs) -> dict | list | str | None:
+        """Sends a request to the device API and returns the response in an appropriate format."""
+        protocol = "http"
+        url = f"{protocol}://{self.ip}/{path.lstrip('/')}"
+        logger.info("Requesting %s %s", method.upper(), url)
+        r = requests.request(method, url, **kwargs)
+        if r.status_code < 200 or r.status_code >= 300:
+            logger.error("Error %d while requesting %s", r.status_code, url)
+            raise MyStromException(f"Error {r.status_code} while requesting {url}: {r.text}")
         try:
             return r.json()
         except JSONDecodeError:
             return r.text
 
-    def api_post(self, path, *args, **kwargs) -> None:
-        path = path.lstrip("/")
-        url = f"http://{self.ip}/{path}"
-        logger.info("Requesting GET %s", url)
-        requests.post(url, *args, **kwargs)
+    def api_get(self, path, **kwargs) -> dict | list | str:
+        """Sends a GET request to the device API and returns the response in an appropriate format."""
+        return self.api_request("GET", path, **kwargs)
+
+    def api_post(self, path, **kwargs) -> dict | list | str:
+        """Sends a POST request to the device API and returns the response in an appropriate format."""
+        return self.api_request("POST", path, **kwargs)
 
     # General API Endpoints
 
