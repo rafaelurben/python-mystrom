@@ -24,7 +24,7 @@ jobs:
           python -m black --check .
       - name: Install mypy types
         run: |
-          python -m mypy --install-types
+          python -m mypy --install-types .
       - name: Check typing with mypy
         run: |
           python -m mypy --strict .
