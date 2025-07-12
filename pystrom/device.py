@@ -10,21 +10,24 @@ logger = logging.getLogger(__name__)
 DEVICE_TYPE_NAME_MAP = {
     101: "Switch CH v1",
     102: "Bulb",
-    103: "Button plus 1st generation",
+    103: "Button+ 1st gen",
     104: "Button small/simple",
     105: "LED Strip",
     106: "Switch CH v2",
     107: "Switch EU",
     110: "Motion Sensor",
     112: "Gateway",
-    113: "STECCO/CUBO",
-    118: "Button Plus 2nd generation",
+    113: "modulo® STECCO / CUBO",
+    118: "Button+ 2nd gen",
     120: "Switch Zero",
 }
 
 
 class MyStromDevice:
+    """Base class for MyStrom devices. All MyStrom devices inherit from this class."""
+
     def __init__(self, ip: str, mac: str, device_type: int):
+        """Do not instantiate this class directly; use MyStromDeviceFactory to create device instances."""
         self.ip: str = ip
         self.mac: str = mac
         self.device_type: int = device_type
@@ -34,6 +37,7 @@ class MyStromDevice:
 
     @property
     def type_name(self) -> str:
+        """Returns the name of the device type based on the device_type integer."""
         if self.device_type in DEVICE_TYPE_NAME_MAP:
             return DEVICE_TYPE_NAME_MAP[self.device_type]
         else:
@@ -41,6 +45,7 @@ class MyStromDevice:
 
     @property
     def name(self) -> str:
+        """Returns the name of the device. Must have fetched settings first."""
         return self.settings.get("name", "Name unknown")
 
     def __str__(self):
@@ -72,10 +77,12 @@ class MyStromDevice:
 
     # General API Endpoints
 
-    def get_info(self) -> dict:
+    def get_general_info(self) -> dict:
+        """Returns general device information such as network settings, type, firmware version, etc."""
         return self.api_get("api/v1/info")
 
-    def get_wifi_list(self):
+    def get_wifi_list(self) -> dict[str, int]:
+        """Returns a dictionary of available WiFi networks with their signal strength."""
         data = self.api_get("api/v1/scan")
         networks = {}
         for i in range(len(data) // 2):
@@ -83,16 +90,20 @@ class MyStromDevice:
         return networks
 
     def get_help(self) -> str:
+        """Returns a string containing a list of available API endpoints."""
         return self.api_get("help")
 
-    # Settings API Endpoints
+    # Common Settings API Endpoints
 
     def get_settings(self) -> dict:
+        """Returns the current settings of the device."""
         self.settings = self.api_get("api/v1/settings")
         return self.settings
 
     def set_settings(self, settings: dict):
-        self.api_post("api/v1/settings", settings)
+        """Sets/Updates the device settings."""
+        self.api_post("api/v1/settings", data=settings)
+
 
     # Switch
 
