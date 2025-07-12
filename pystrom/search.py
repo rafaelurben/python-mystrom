@@ -1,7 +1,7 @@
 import logging
 import socket
 
-from pystrom.device import MyStromDevice
+from pystrom.device import MyStromDevice, MyStromDeviceFactory
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ class MyStromSearch:
                 data, (ip, port) = self.sock.recvfrom(1024)  # buffer size is 1024 bytes
 
                 if ip not in ips_found:
-                    x = MyStromDevice.from_announcement(data, ip)
+                    x = MyStromDeviceFactory.from_announcement(data, ip)
                     logger.info("Found device: %s", x)
 
                     ips_found.append(ip)
@@ -67,7 +67,7 @@ class MyStromSearch:
                     self.sock.settimeout(5.0)
                     data, (ip, port) = self.sock.recvfrom(1024)  # buffer size is 1024 bytes
 
-                    x = MyStromDevice.from_announcement(data, ip)
+                    x = MyStromDeviceFactory.from_announcement(data, ip)
                     logger.info("Found device: %s", x)
                 except socket.timeout:
                     pass
