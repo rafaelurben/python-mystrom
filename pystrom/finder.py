@@ -7,14 +7,14 @@ from pystrom.device import MyStromDevice, MyStromDeviceFactory
 logger = logging.getLogger(__name__)
 
 
-class MyStromSearch:
+class MyStromDeviceFinder:
     """
-    Search for MyStrom devices on the local network by listening for UDP broadcasts.
+    Finds MyStrom devices on the local network by listening for UDP broadcasts.
 
     Usage:
 
-        with MyStromSearch() as searcher:
-            devices = searcher.search_all()
+        with MyStromDeviceFinder() as finder:
+            devices = finder.find_all()
             for device in devices:
                 print(device)
     """
@@ -24,7 +24,7 @@ class MyStromSearch:
         self.ip = ip
         self.port = port
 
-    def __enter__(self) -> "MyStromSearch":
+    def __enter__(self) -> "MyStromDeviceFinder":
         self.sock.bind((self.ip, self.port))
         logger.debug("Socket bound to %s:%s", self.ip, self.port)
         return self
@@ -33,7 +33,14 @@ class MyStromSearch:
         self.sock.close()
         logger.debug("Socket closed")
 
-    def search_all(self) -> list[MyStromDevice]:
+    def find_all(self) -> list[MyStromDevice]:
+        """Find all MyStrom devices on the local network.
+
+        MyStrom devices announce themselves via UDP broadcasts on port 7979 every 5 seconds.
+        This methods listens for these broadcasts and returns a list of found devices as soon as the first device is
+        encountered a second time or after 5 seconds of no new devices being found.
+        """
+
         logger.info("Looking for devices...")
 
         ips_found = []
@@ -58,7 +65,9 @@ class MyStromSearch:
         logger.info("%s devices found!", len(devices_found))
         return devices_found
 
-    def search_live(self) -> None:
+    def find_continuous(self) -> None:
+        """Continuously listen for MyStrom devices on the local network."""
+
         logger.info("Looking for devices... (Press Ctrl+C to exit!)")
 
         try:

@@ -23,23 +23,23 @@ This library provides a simple [CLI](#console-commands) and a [Python API](#pyth
 
 ### Console Commands
 
-| Command                           | Function                                                     |
-|-----------------------------------|--------------------------------------------------------------|
-| `python -m pystrom search`        | Search for MyStrom devices in the local network              |
-| `python -m pystrom search --live` | Continuously search for MyStrom devices in the local network |
+| Command                         | Function                                                     |
+|---------------------------------|--------------------------------------------------------------|
+| `python -m pystrom find`        | Listen for MyStrom devices in the local network              |
+| `python -m pystrom find --live` | Continuously listen for MyStrom devices in the local network |
 
 ### Python API
 
 #### Get device objects
 
-You can use the `MyStromSearch` class to find devices in your local network. It will return a list of `MyStromDevice`
-objects or subclasses thereof.
+You can use the `MyStromDeviceFinder` class to find devices in your local network. It will return a list of
+`MyStromDevice` objects or subclasses thereof.
 
 ```python
-from pystrom.search import MyStromSearch
+from pystrom.finder import MyStromDeviceFinder
 
-with MyStromSearch() as searcher:
-    devices = searcher.search_all()  # will take 5 seconds
+with MyStromDeviceFinder() as finder:
+    devices = finder.find_all()  # will take 5 seconds
     for device in devices:
         print(device)
 ```

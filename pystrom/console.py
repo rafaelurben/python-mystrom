@@ -2,7 +2,7 @@ import argparse
 import logging
 import sys
 
-from pystrom.search import MyStromSearch
+from pystrom.finder import MyStromDeviceFinder
 
 logger = logging.getLogger(__name__)
 
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class MyStromCommandParser:
     """MyStrom command line utility"""
 
-    COMMANDS = ["search"]
+    COMMANDS = ["find"]
 
     def __get_usage__(self) -> str:
         doc = "pystrom <command> [args]\n\nPossible commands:\n"
@@ -32,9 +32,9 @@ class MyStromCommandParser:
 
     # Commands
 
-    def search(self) -> None:
+    def find(self) -> None:
         """Search MyStrom devices in your local network"""
-        parser = argparse.ArgumentParser(description=self.search.__doc__)
+        parser = argparse.ArgumentParser(description=self.find.__doc__)
         parser.add_argument(
             "--live",
             action="store_true",
@@ -42,8 +42,8 @@ class MyStromCommandParser:
         )
         args = parser.parse_args(sys.argv[2:])
 
-        with MyStromSearch() as searcher:
+        with MyStromDeviceFinder() as finder:
             if args.live:
-                searcher.search_live()
+                finder.find_continuous()
             else:
-                searcher.search_all()
+                finder.find_all()
