@@ -1,5 +1,6 @@
 import logging
 import socket
+from typing import Any
 
 from pystrom.device import MyStromDevice, MyStromDeviceFactory
 
@@ -23,12 +24,12 @@ class MyStromSearch:
         self.ip = ip
         self.port = port
 
-    def __enter__(self):
+    def __enter__(self) -> "MyStromSearch":
         self.sock.bind((self.ip, self.port))
         logger.debug("Socket bound to %s:%s", self.ip, self.port)
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
         self.sock.close()
         logger.debug("Socket closed")
 
@@ -57,7 +58,7 @@ class MyStromSearch:
         logger.info("%s devices found!", len(devices_found))
         return devices_found
 
-    def search_live(self):
+    def search_live(self) -> None:
         logger.info("Looking for devices... (Press Ctrl+C to exit!)")
 
         try:

@@ -30,6 +30,7 @@ dynamic = ["version"]
 [project.optional-dependencies]
 dev = [
     "black>=25.1.0",
+    "mypy>=1.16.1",
 ]
 
 [project.urls]

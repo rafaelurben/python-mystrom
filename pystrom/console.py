@@ -12,13 +12,13 @@ class MyStromCommandParser:
 
     COMMANDS = ["search"]
 
-    def __get_usage__(self):
+    def __get_usage__(self) -> str:
         doc = "pystrom <command> [args]\n\nPossible commands:\n"
         for cmd in self.COMMANDS:
             doc += cmd.ljust(12) + getattr(self, cmd).__doc__ + "\n"
         return doc + "\n"
 
-    def __init__(self):
+    def __init__(self) -> None:
         parser = argparse.ArgumentParser(
             description="Control MyStrom devices", usage=self.__get_usage__()
         )
@@ -32,7 +32,7 @@ class MyStromCommandParser:
 
     # Commands
 
-    def search(self):
+    def search(self) -> None:
         """Search MyStrom devices in your local network"""
         parser = argparse.ArgumentParser(description=self.search.__doc__)
         parser.add_argument(

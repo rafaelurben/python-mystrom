@@ -1,6 +1,6 @@
 import logging
 from json import JSONDecodeError
-from typing import Literal, TypedDict, NotRequired
+from typing import Literal, TypedDict, NotRequired, Any, TypeVar, Type, cast
 
 import requests
 
@@ -23,6 +23,8 @@ DEVICE_TYPE_NAME_MAP = {
     120: "Switch Zero",
 }
 
+R = TypeVar("R")
+
 
 class MyStromDevice:
     """Base class for MyStrom devices. All MyStrom devices inherit from this class."""
@@ -32,7 +34,7 @@ class MyStromDevice:
         self.ip: str = ip
         self.mac: str = mac
         self.device_type: int = device_type
-        self.settings: dict = {}
+        self.settings: dict[str, Any] = {}
 
     # Properties
 
@@ -47,16 +49,18 @@ class MyStromDevice:
     @property
     def name(self) -> str:
         """Returns the name of the device. Must have fetched settings first."""
-        return self.settings.get("name", "Name unknown")
+        return cast(str, self.settings.get("name", "Name unknown"))
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             f"<{self.__class__.__name__} ({self.type_name}) '{self.name}' {self.mac} @ {self.ip}>"
         )
 
     # Base API
 
-    def api_request(self, method: str, path: str, **kwargs) -> dict | list | str | None:
+    def api_request(
+        self, method: str, path: str, return_type: Type[R] | None = None, **kwargs: Any
+    ) -> R:
         """Sends a request to the device API and returns the response in an appropriate format."""
         protocol = "http"
         url = f"{protocol}://{self.ip}/{path.lstrip('/')}"
@@ -65,45 +69,51 @@ class MyStromDevice:
         if r.status_code < 200 or r.status_code >= 300:
             logger.error("Error %d while requesting %s", r.status_code, url)
             raise MyStromException(f"Error {r.status_code} while requesting {url}: {r.text}")
+
+        if return_type is None:
+            return None  # type: ignore[return-value]
+        if return_type is str:
+            return r.text  # type: ignore[return-value]
         try:
-            return r.json()
+            return cast(R, r.json())
         except JSONDecodeError:
-            return r.text
+            logger.error("Error decoding JSON response from %s: %s", url, r.text)
+            raise MyStromException(f"Error decoding JSON response from {url}: {r.text}")
 
-    def api_get(self, path, **kwargs) -> dict | list | str:
+    def api_get(self, path: str, return_type: Type[R] | None = None, **kwargs: Any) -> R:
         """Sends a GET request to the device API and returns the response in an appropriate format."""
-        return self.api_request("GET", path, **kwargs)
+        return self.api_request("GET", path, return_type=return_type, **kwargs)
 
-    def api_post(self, path, **kwargs) -> dict | list | str:
+    def api_post(self, path: str, return_type: Type[R] | None = None, **kwargs: Any) -> R:
         """Sends a POST request to the device API and returns the response in an appropriate format."""
-        return self.api_request("POST", path, **kwargs)
+        return self.api_request("POST", path, return_type=return_type, **kwargs)
 
     # General API Endpoints
 
-    def get_general_info(self) -> dict:
+    def get_general_info(self) -> dict[str, Any]:
         """Returns general device information such as network settings, type, firmware version, etc."""
-        return self.api_get("api/v1/info")
+        return self.api_get("api/v1/info", return_type=dict[str, Any])
 
     def get_wifi_list(self) -> dict[str, int]:
         """Returns a dictionary of available WiFi networks with their signal strength."""
-        data = self.api_get("api/v1/scan")
-        networks = {}
+        data = self.api_get("api/v1/scan", return_type=list[int | str])
+        networks: dict[str, int] = {}
         for i in range(len(data) // 2):
-            networks[data[i * 2]] = data[i * 2 + 1]
+            networks[str(data[i * 2])] = int(data[i * 2 + 1])
         return networks
 
     def get_help(self) -> str:
         """Returns a string containing a list of available API endpoints."""
-        return self.api_get("help")
+        return self.api_get("help", return_type=str)
 
     # Common Settings API Endpoints
 
-    def get_settings(self) -> dict:
+    def get_settings(self) -> dict[str, Any]:
         """Returns the current settings of the device."""
-        self.settings = self.api_get("api/v1/settings")
+        self.settings = self.api_get("api/v1/settings", return_type=dict)
         return self.settings
 
-    def set_settings(self, settings: dict):
+    def set_settings(self, settings: dict[str, Any]) -> None:
         """Sets/Updates the device settings."""
         self.api_post("api/v1/settings", data=settings)
 
@@ -114,20 +124,20 @@ class MyStromSwitch(MyStromDevice):
     def __init__(self, ip: str, mac: str, device_type: int):
         super().__init__(ip=ip, mac=mac, device_type=device_type)
 
-    def turn_on(self):
+    def turn_on(self) -> None:
         """Turn on the switch."""
         self.api_get("relay?state=1")
 
-    def turn_off(self):
+    def turn_off(self) -> None:
         """Turn off the switch."""
         self.api_get("relay?state=0")
 
     def toggle(self) -> bool:
         """Toggle the switch state. If it is on, it will be turned off, and vice versa.
         Returns the new state of the relay."""
-        return self.api_get("toggle").get("relay")
+        return self.api_get("toggle", return_type=dict[str, bool]).get("relay", False)
 
-    def power_cycle(self, seconds: int = 10):
+    def power_cycle(self, seconds: int = 10) -> None:
         """Power cycle the switch by turning it off, waiting for a specified number of seconds, and then turning it back on.
         Will throw an error if the switch is not currently on.
 
@@ -136,17 +146,17 @@ class MyStromSwitch(MyStromDevice):
         """
         self.api_get(f"power_cycle?time={seconds}")
 
-    def timer(self, mode: Literal["on", "off", "toggle", "none"], seconds: int = 5):
+    def timer(self, mode: Literal["on", "off", "toggle", "none"], seconds: int = 5) -> None:
         """Set the state of the switch and reverse it after a specified number of seconds."""
         self.api_post("timer", data={"mode": mode, "time": seconds})
 
     def get_report(self) -> str:
         """Returns a report of the switch's current state, including power consumption, relay state and temperature."""
-        return self.api_get("report")
+        return self.api_get("report", return_type=str)
 
-    def get_temperature(self) -> dict:
+    def get_temperature(self) -> dict[str, float]:
         """Returns the current temperature reading and temperature configuration."""
-        return self.api_get("api/v1/temperature")
+        return self.api_get("api/v1/temperature", return_type=dict[str, float])
 
 
 class MyStromBulb(MyStromDevice):
@@ -166,15 +176,19 @@ class MyStromBulb(MyStromDevice):
         ramp: NotRequired[int]  # ramp time in ms
         notifyurl: NotRequired[str]  # URL to notify via POST when the state changes
 
-    def __init__(self, ip: str, mac: str, device_type: int):
+    def __init__(self, ip: str, mac: str, device_type: int) -> None:
         super().__init__(ip=ip, mac=mac, device_type=device_type)
 
     def _post_action(self, data: BulbStateRequest) -> BulbStateResponse:
-        return self.api_post(
-            f"api/v1/device/{self.mac}",
-            data={"action": data},
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
-        ).get(self.mac)
+        return cast(
+            MyStromBulb.BulbStateResponse,
+            self.api_post(
+                f"api/v1/device/{self.mac}",
+                return_type=dict[str, MyStromBulb.BulbStateResponse],
+                data={"action": data},
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            ).get(self.mac),
+        )
 
     def turn_on(self) -> BulbStateResponse:
         """Turn on the bulb."""
@@ -192,9 +206,9 @@ class MyStromBulb(MyStromDevice):
         """Sets options like color, ramp, mode and notifyurl for the bulb."""
         return self._post_action(data)
 
-    def get_device_information(self) -> dict:
+    def get_device_information(self) -> dict[str, Any]:
         """Returns the device information, including the current state of the bulb."""
-        return self.api_get(f"api/v1/device")
+        return self.api_get(f"api/v1/device", dict[str, Any])
 
 
 DEVICE_TYPE_CLASS_MAP = {
