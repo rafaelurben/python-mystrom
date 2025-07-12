@@ -7,50 +7,67 @@ logger = logging.getLogger(__name__)
 
 
 class MyStromSearch:
-    UDP_IP = "0.0.0.0"
-    UDP_PORT = 7979
+    """
+    Search for MyStrom devices on the local network by listening for UDP broadcasts.
 
-    sock = socket.socket(socket.AF_INET,  # Internet
-                         socket.SOCK_DGRAM)  # UDP
-    sock.bind((UDP_IP, UDP_PORT))
+    Usage:
 
-    @classmethod
-    def searchall(cls):
+        with MyStromSearch() as searcher:
+            devices = searcher.search_all()
+            for device in devices:
+                print(device)
+    """
+
+    def __init__(self, ip: str = "0.0.0.0", port: int = 7979):
+        self.sock = socket.socket(socket.AF_INET,  # Internet (IPv4)
+                                  socket.SOCK_DGRAM)  # UDP
+        self.ip = ip
+        self.port = port
+
+    def __enter__(self):
+        self.sock.bind((self.ip, self.port))
+        logger.debug("Socket bound to %s:%s", self.ip, self.port)
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.sock.close()
+        logger.debug("Socket closed")
+
+    def search_all(self) -> list[MyStromDevice]:
         logger.info("Looking for devices...")
 
-        ipsfound = []
-        devicesfound = []
+        ips_found = []
+        devices_found = []
 
         try:
             while True:
-                cls.sock.settimeout(5.0)
-                data, addr = cls.sock.recvfrom(1024)  # buffer size is 1024 bytes
+                self.sock.settimeout(5.0)
+                data, (ip, port) = self.sock.recvfrom(1024)  # buffer size is 1024 bytes
 
-                if not addr[0] in ipsfound:
-                    x = MyStromDevice.from_announcement(data, addr[0])
+                if ip not in ips_found:
+                    x = MyStromDevice.from_announcement(data, ip)
                     logger.info("Found device: %s", x)
 
-                    ipsfound.append(addr[0])
-                    devicesfound.append(x)
+                    ips_found.append(ip)
+                    devices_found.append(x)
                 else:
                     break
         except socket.timeout:
             pass
 
-        logger.info("%s devices found!", len(devicesfound))
-        return devicesfound
+        logger.info("%s devices found!", len(devices_found))
+        return devices_found
 
-    @classmethod
-    def searchlive(cls):
+    def search_live(self):
         logger.info("Looking for devices... (Press Ctrl+C to exit!)")
 
         try:
             while True:
                 try:
-                    cls.sock.settimeout(5.0)
-                    data, addr = cls.sock.recvfrom(1024)  # buffer size is 1024 bytes
+                    self.sock.settimeout(5.0)
+                    data, (ip, port) = self.sock.recvfrom(1024)  # buffer size is 1024 bytes
 
-                    x = MyStromDevice.from_announcement(data, addr[0])
+                    x = MyStromDevice.from_announcement(data, ip)
                     logger.info("Found device: %s", x)
                 except socket.timeout:
                     pass

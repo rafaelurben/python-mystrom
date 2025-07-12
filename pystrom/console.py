@@ -38,7 +38,9 @@ class MyStromCommandParser:
         parser.add_argument('--live', action='store_true',
                             help="Keep connection open until manually stopped.")
         args = parser.parse_args(sys.argv[2:])
-        if args.live:
-            MyStromSearch.searchlive()
-        else:
-            MyStromSearch.searchall()
+
+        with MyStromSearch() as searcher:
+            if args.live:
+                searcher.search_live()
+            else:
+                searcher.search_all()
