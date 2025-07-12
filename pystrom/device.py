@@ -50,7 +50,9 @@ class MyStromDevice:
         return self.settings.get("name", "Name unknown")
 
     def __str__(self):
-        return f"<{self.__class__.__name__} ({self.type_name}) '{self.name}' {self.mac} @ {self.ip}>"
+        return (
+            f"<{self.__class__.__name__} ({self.type_name}) '{self.name}' {self.mac} @ {self.ip}>"
+        )
 
     # Base API
 
@@ -134,7 +136,7 @@ class MyStromSwitch(MyStromDevice):
         """
         self.api_get(f"power_cycle?time={seconds}")
 
-    def timer(self, mode: Literal['on', 'off', 'toggle', 'none'], seconds: int = 5):
+    def timer(self, mode: Literal["on", "off", "toggle", "none"], seconds: int = 5):
         """Set the state of the switch and reverse it after a specified number of seconds."""
         self.api_post("timer", data={"mode": mode, "time": seconds})
 
@@ -158,9 +160,9 @@ class MyStromBulb(MyStromDevice):
         notifyurl: str
 
     class BulbStateRequest(TypedDict):
-        action: NotRequired[Literal['on', 'off', 'toggle']]
+        action: NotRequired[Literal["on", "off", "toggle"]]
         color: NotRequired[str]  # e.g. "255,0,0" for red in RGB
-        mode: NotRequired[Literal['hsv', 'rgb']]
+        mode: NotRequired[Literal["hsv", "rgb"]]
         ramp: NotRequired[int]  # ramp time in ms
         notifyurl: NotRequired[str]  # URL to notify via POST when the state changes
 
@@ -168,9 +170,11 @@ class MyStromBulb(MyStromDevice):
         super().__init__(ip=ip, mac=mac, device_type=device_type)
 
     def _post_action(self, data: BulbStateRequest) -> BulbStateResponse:
-        return self.api_post(f"api/v1/device/{self.mac}",
-                             data={"action": data},
-                             headers={'Content-Type': 'application/x-www-form-urlencoded'}).get(self.mac)
+        return self.api_post(
+            f"api/v1/device/{self.mac}",
+            data={"action": data},
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        ).get(self.mac)
 
     def turn_on(self) -> BulbStateResponse:
         """Turn on the bulb."""

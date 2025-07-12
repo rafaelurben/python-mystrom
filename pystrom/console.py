@@ -20,12 +20,12 @@ class MyStromCommandParser:
 
     def __init__(self):
         parser = argparse.ArgumentParser(
-            description='Control MyStrom devices',
-            usage=self.__get_usage__())
-        parser.add_argument('command', help='Subcommand to run')
+            description="Control MyStrom devices", usage=self.__get_usage__()
+        )
+        parser.add_argument("command", help="Subcommand to run")
         args = parser.parse_args(sys.argv[1:2])
         if not hasattr(self, args.command):
-            logger.error('Unrecognized command')
+            logger.error("Unrecognized command")
             parser.print_help()
             exit(1)
         getattr(self, args.command)()
@@ -35,8 +35,11 @@ class MyStromCommandParser:
     def search(self):
         """Search MyStrom devices in your local network"""
         parser = argparse.ArgumentParser(description=self.search.__doc__)
-        parser.add_argument('--live', action='store_true',
-                            help="Keep connection open until manually stopped.")
+        parser.add_argument(
+            "--live",
+            action="store_true",
+            help="Keep connection open until manually stopped.",
+        )
         args = parser.parse_args(sys.argv[2:])
 
         with MyStromSearch() as searcher:

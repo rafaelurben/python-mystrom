@@ -19,8 +19,7 @@ class MyStromSearch:
     """
 
     def __init__(self, ip: str = "0.0.0.0", port: int = 7979):
-        self.sock = socket.socket(socket.AF_INET,  # Internet (IPv4)
-                                  socket.SOCK_DGRAM)  # UDP
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # Internet (IPv4) / UDP
         self.ip = ip
         self.port = port
 
