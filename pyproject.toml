@@ -15,12 +15,11 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
-requires-python = ">= 3.10"
+requires-python = ">= 3.11"
 dependencies = [
     "requests>=2.25.1",
     "packaging>=20.8",
@@ -49,5 +48,5 @@ version = { file = ["_version.txt"] }
 
 [tool.black]
 line-length = 100
-target-version = ['py310', 'py311', 'py312', 'py313']
+target-version = ['py311', 'py312', 'py313']
 include = '\.pyi?$'
