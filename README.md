@@ -10,6 +10,8 @@ developed and tested with the MyStrom Wi-Fi Switch CH.
 
 Official MyStrom API Documentation: [https://api.mystrom.ch/](https://api.mystrom.ch/)
 
+Want to contribute? Check out the [Contributing](#contributing) section below.
+
 ## Installation
 
 Installation requires [Python](https://www.python.org/downloads/)
@@ -102,7 +104,7 @@ to the device's API endpoints.
 | `.api_get()`  | Send a GET request to the device's API endpoint  |
 | `.api_post()` | Send a POST request to the device's API endpoint |
 
-### Contributing
+## Contributing
 
 If you want to contribute to this project, feel free to open an issue or pull request. Contributions are welcome!
 
