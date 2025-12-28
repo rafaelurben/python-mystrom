@@ -39,8 +39,10 @@ class MyStromDeviceFinder:
         """Find all MyStrom devices on the local network.
 
         MyStrom devices announce themselves via UDP broadcasts on port 7979 every 5 seconds.
-        This methods listens for these broadcasts and returns a list of found devices as soon as the first device is
-        encountered a second time or after 5 seconds of no new devices being found.
+        This methods listens for these broadcasts and returns a list of found devices as soon as
+        no new devices are encountered in 10 seconds.
+
+        This method will at least take 10 seconds before it returns.
         """
 
         logger.info("Looking for devices...")
@@ -53,20 +55,16 @@ class MyStromDeviceFinder:
         try:
             while (datetime.now() - last_new_device_found).total_seconds() < 10:
                 self.sock.settimeout(5.0)
-                try:
-                    data, (ip, port) = self.sock.recvfrom(1024)  # buffer size is 1024 bytes
+                data, (ip, port) = self.sock.recvfrom(1024)  # buffer size is 1024 bytes
 
-                    if ip not in ips_found:
-                        x = MyStromDeviceFactory.from_announcement(data, ip)
-                        logger.info("Found device: %s", x)
+                if ip not in ips_found:
+                    device = MyStromDeviceFactory.from_announcement(data, ip)
+                    logger.info("Found device: %s", device)
 
-                        ips_found.append(ip)
-                        devices_found.append(x)
-                        last_new_device_found = datetime.now()
-                except socket.timeout:
-                    if devices_found:
-                        break
-        except Exception:
+                    ips_found.append(ip)
+                    devices_found.append(device)
+                    last_new_device_found = datetime.now()
+        except socket.timeout:
             pass
 
         logger.info("%s devices found!", len(devices_found))
