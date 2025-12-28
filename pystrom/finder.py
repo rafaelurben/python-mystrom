@@ -1,5 +1,6 @@
 import logging
 import socket
+from datetime import datetime
 from typing import Any
 
 from pystrom.device import MyStromDevice, MyStromDeviceFactory
@@ -47,18 +48,25 @@ class MyStromDeviceFinder:
         ips_found = []
         devices_found = []
 
+        last_new_device_found = datetime.now()
+
         try:
-            while True:
+            while (datetime.now() - last_new_device_found).total_seconds() < 10:
                 self.sock.settimeout(5.0)
-                data, (ip, port) = self.sock.recvfrom(1024)  # buffer size is 1024 bytes
+                try:
+                    data, (ip, port) = self.sock.recvfrom(1024)  # buffer size is 1024 bytes
 
-                if ip not in ips_found:
-                    x = MyStromDeviceFactory.from_announcement(data, ip)
-                    logger.info("Found device: %s", x)
+                    if ip not in ips_found:
+                        x = MyStromDeviceFactory.from_announcement(data, ip)
+                        logger.info("Found device: %s", x)
 
-                    ips_found.append(ip)
-                    devices_found.append(x)
-        except socket.timeout:
+                        ips_found.append(ip)
+                        devices_found.append(x)
+                        last_new_device_found = datetime.now()
+                except socket.timeout:
+                    if devices_found:
+                        break
+        except Exception:
             pass
 
         logger.info("%s devices found!", len(devices_found))
