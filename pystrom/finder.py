@@ -21,6 +21,7 @@ class MyStromDeviceFinder:
 
     def __init__(self, ip: str = "0.0.0.0", port: int = 7979):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # Internet (IPv4) / UDP
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.ip = ip
         self.port = port
 
@@ -57,8 +58,6 @@ class MyStromDeviceFinder:
 
                     ips_found.append(ip)
                     devices_found.append(x)
-                else:
-                    break
         except socket.timeout:
             pass
 

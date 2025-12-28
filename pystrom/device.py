@@ -185,7 +185,7 @@ class MyStromBulb(MyStromDevice):
             self.api_post(
                 f"api/v1/device/{self.mac}",
                 return_type=dict[str, MyStromBulb.BulbStateResponse],
-                data={"action": data},
+                data=data,
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
             ).get(self.mac),
         )
@@ -208,7 +208,7 @@ class MyStromBulb(MyStromDevice):
 
     def get_device_information(self) -> dict[str, Any]:
         """Returns the device information, including the current state of the bulb."""
-        return self.api_get(f"api/v1/device", dict[str, Any])
+        return self.api_get(f"api/v1/device/{self.mac}", dict[str, Any])
 
 
 DEVICE_TYPE_CLASS_MAP = {
@@ -231,7 +231,9 @@ class MyStromDeviceFactory:
             cls.all_devices[mac] = device
             return device
         else:
-            return cls.all_devices[mac]
+            device = cls.all_devices[mac]
+            device.ip = ip
+            return device
 
     @classmethod
     def from_announcement(cls, data: bytes, ip: str) -> "MyStromDevice":
