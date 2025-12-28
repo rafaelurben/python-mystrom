@@ -55,7 +55,7 @@ class MyStromDeviceFinder:
         try:
             while (datetime.now() - last_new_device_found).total_seconds() < 10:
                 self.sock.settimeout(5.0)
-                data, (ip, port) = self.sock.recvfrom(1024)  # buffer size is 1024 bytes
+                data, (ip, _) = self.sock.recvfrom(1024)  # buffer size is 1024 bytes
 
                 if ip not in ips_found:
                     device = MyStromDeviceFactory.from_announcement(data, ip)
@@ -79,7 +79,7 @@ class MyStromDeviceFinder:
             while True:
                 try:
                     self.sock.settimeout(5.0)
-                    data, (ip, port) = self.sock.recvfrom(1024)  # buffer size is 1024 bytes
+                    data, (ip, _) = self.sock.recvfrom(1024)  # buffer size is 1024 bytes
 
                     x = MyStromDeviceFactory.from_announcement(data, ip)
                     logger.info("Found device: %s", x)

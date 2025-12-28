@@ -95,7 +95,7 @@ class MyStromDevice:
         return self.api_get("api/v1/info", return_type=dict[str, Any])
 
     def get_wifi_list(self) -> dict[str, int]:
-        """Returns a dictionary of available WiFi networks with their signal strength."""
+        """Returns a dictionary of available Wi-Fi networks with their signal strength."""
         data = self.api_get("api/v1/scan", return_type=list[int | str])
         networks: dict[str, int] = {}
         for i in range(len(data) // 2):
