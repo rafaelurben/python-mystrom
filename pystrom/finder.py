@@ -1,5 +1,6 @@
 import logging
 import socket
+from datetime import datetime
 from typing import Any
 
 from pystrom.device import MyStromDevice, MyStromDeviceFactory
@@ -21,6 +22,7 @@ class MyStromDeviceFinder:
 
     def __init__(self, ip: str = "0.0.0.0", port: int = 7979):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # Internet (IPv4) / UDP
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.ip = ip
         self.port = port
 
@@ -37,8 +39,10 @@ class MyStromDeviceFinder:
         """Find all MyStrom devices on the local network.
 
         MyStrom devices announce themselves via UDP broadcasts on port 7979 every 5 seconds.
-        This methods listens for these broadcasts and returns a list of found devices as soon as the first device is
-        encountered a second time or after 5 seconds of no new devices being found.
+        This methods listens for these broadcasts and returns a list of found devices as soon as
+        no new devices are encountered in 10 seconds.
+
+        This method will at least take 10 seconds before it returns.
         """
 
         logger.info("Looking for devices...")
@@ -46,19 +50,20 @@ class MyStromDeviceFinder:
         ips_found = []
         devices_found = []
 
+        last_new_device_found = datetime.now()
+
         try:
-            while True:
+            while (datetime.now() - last_new_device_found).total_seconds() < 10:
                 self.sock.settimeout(5.0)
                 data, (ip, port) = self.sock.recvfrom(1024)  # buffer size is 1024 bytes
 
                 if ip not in ips_found:
-                    x = MyStromDeviceFactory.from_announcement(data, ip)
-                    logger.info("Found device: %s", x)
+                    device = MyStromDeviceFactory.from_announcement(data, ip)
+                    logger.info("Found device: %s", device)
 
                     ips_found.append(ip)
-                    devices_found.append(x)
-                else:
-                    break
+                    devices_found.append(device)
+                    last_new_device_found = datetime.now()
         except socket.timeout:
             pass
 
