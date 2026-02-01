@@ -1,6 +1,6 @@
 import logging
 from json import JSONDecodeError
-from typing import Literal, TypedDict, NotRequired, Any, TypeVar, Type, cast
+from typing import Literal, TypedDict, NotRequired, Any, Type, cast
 
 import requests
 
@@ -22,8 +22,6 @@ DEVICE_TYPE_NAME_MAP = {
     118: "Button+ 2nd gen",
     120: "Switch Zero",
 }
-
-R = TypeVar("R")
 
 
 class MyStromDevice:
@@ -58,7 +56,7 @@ class MyStromDevice:
 
     # Base API
 
-    def api_request(
+    def api_request[R](
         self, method: str, path: str, return_type: Type[R] | None = None, **kwargs: Any
     ) -> R:
         """Sends a request to the device API and returns the response in an appropriate format."""
@@ -80,11 +78,11 @@ class MyStromDevice:
             logger.error("Error decoding JSON response from %s: %s", url, r.text)
             raise MyStromException(f"Error decoding JSON response from {url}: {r.text}")
 
-    def api_get(self, path: str, return_type: Type[R] | None = None, **kwargs: Any) -> R:
+    def api_get[R](self, path: str, return_type: Type[R] | None = None, **kwargs: Any) -> R:
         """Sends a GET request to the device API and returns the response in an appropriate format."""
         return self.api_request("GET", path, return_type=return_type, **kwargs)
 
-    def api_post(self, path: str, return_type: Type[R] | None = None, **kwargs: Any) -> R:
+    def api_post[R](self, path: str, return_type: Type[R] | None = None, **kwargs: Any) -> R:
         """Sends a POST request to the device API and returns the response in an appropriate format."""
         return self.api_request("POST", path, return_type=return_type, **kwargs)
 
