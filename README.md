@@ -110,11 +110,12 @@ If you want to contribute to this project, feel free to open an issue or pull re
 
 1. Fork the repository
 2. Clone your forked repository
-3. `python -m pip install -e .[dev]` to install the package in editable mode with development dependencies
-4. Install mypy types: `python -m mypy --install-types --non-interactive .`
-5. Make your changes
-6. Format & check your code:
+3. `python -m pip install -e .` to install the package in editable mode
+4. Install dependencies and dev dependencies: `python -m pip install -r requirements.txt -r dev-requirements.txt`
+5. Install mypy types: `python -m mypy --install-types --non-interactive .`
+6. Make your changes
+7. Format & check your code:
     - Format your code with `python -m black .`
     - Check typing with `python -m mypy --strict .`
-7. Push your changes to your forked repository
-8. Open a pull request
+8. Push your changes to your forked repository
+9. Open a pull request
