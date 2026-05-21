@@ -35,7 +35,7 @@ pystrom = "pystrom.__main__:main"
 
 [dependency-groups]
 dev = [
-    "black==26.5.0",
+    "black==26.5.1",
     "mypy==2.1.0",
 ]
 
